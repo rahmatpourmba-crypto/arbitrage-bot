@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+
+state.json
+trades.csv
+arbitrage.log
+report/
+
+.env
+.env.*
+!*.env.example
+*.key
+secrets_*
