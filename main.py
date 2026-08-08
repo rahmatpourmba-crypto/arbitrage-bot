@@ -18,6 +18,21 @@ log = logging.getLogger("arbitrage")
 
 
 def execute(trader, opp: dict) -> bool:
+    if not (config.is_tradable(opp["buy_exchange"]) and config.is_tradable(opp["sell_exchange"])):
+        store.record_opportunity({
+            "time": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "symbol": opp["symbol"],
+            "buy_exchange": opp["buy_exchange"],
+            "sell_exchange": opp["sell_exchange"],
+            "buy_price": opp["buy_price"],
+            "sell_price": opp["sell_price"],
+            "profit_percent": opp["profit_percent"],
+            "status": "observed",
+        })
+        log.info("OBSERVE %s buy=%s@%s sell=%s@%s profit=%.3f%% (no API key on one/both exchanges)",
+                 opp["symbol"], opp["buy_exchange"], opp["buy_price"],
+                 opp["sell_exchange"], opp["sell_price"], opp["profit_percent"])
+        return False
     base, quote = opp["symbol"].split("/")
     notional = config.TRADE_SIZE_USDT
     amount = notional / opp["buy_price"]
@@ -45,6 +60,7 @@ def execute(trader, opp: dict) -> bool:
         "buy_price": opp["buy_price"],
         "sell_price": opp["sell_price"],
         "profit_percent": opp["profit_percent"],
+        "status": "executed",
     })
     log.info(
         "OPP %s buy=%s@%s sell=%s@%s profit=%.3f%% pnl=%+.4f USDT",
@@ -60,8 +76,9 @@ def execute(trader, opp: dict) -> bool:
 
 
 def run_forever(scanner, trader):
-    log.info("Bot started | symbols=%s | exchanges=%s | min_profit=%.2f%% | paper=%s",
-             config.SYMBOLS, config.EXCHANGES, config.MIN_PROFIT_PERCENT, config.PAPER_TRADING)
+    tradable = config.tradable_exchanges()
+    log.info("Bot started | symbols=%s | exchanges=%s | min_profit=%.2f%% | paper=%s | tradable=%s",
+             config.SYMBOLS, config.EXCHANGES, config.MIN_PROFIT_PERCENT, config.PAPER_TRADING, tradable)
     store.set_status("running")
     while True:
         try:
@@ -98,6 +115,7 @@ def report_scan(scanner):
             "buy_price": opp["buy_price"],
             "sell_price": opp["sell_price"],
             "profit_percent": opp["profit_percent"],
+            "status": "observed",
         })
     import report
     report.export()

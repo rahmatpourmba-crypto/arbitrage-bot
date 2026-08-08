@@ -10,9 +10,10 @@ def _render(state) -> str:
 
     opp_rows = ""
     for o in state.get("opportunities", [])[:50]:
+        status = "معامله شد" if o.get("status") == "executed" else "فقط مشاهده"
         opp_rows += (
             "<tr><td>{time}</td><td>{symbol}</td><td>{buy} @ {bp}</td>"
-            "<td>{sell} @ {sp}</td><td class=\"pos\">{pp}</td></tr>"
+            "<td>{sell} @ {sp}</td><td class=\"pos\">{pp}</td><td>{status}</td></tr>"
         ).format(
             time=html.escape(str(o.get("time", ""))),
             symbol=html.escape(str(o.get("symbol", ""))),
@@ -21,11 +22,12 @@ def _render(state) -> str:
             sell=html.escape(str(o.get("sell_exchange", ""))),
             sp=html.escape(str(o.get("sell_price", ""))),
             pp=html.escape(str(o.get("profit_percent", ""))),
+            status=html.escape(status),
         )
     rows.append('<div class="section"><h3>فرصت‌های اخیر</h3><table>'
                 '<thead><tr><th>زمان</th><th>جفت‌ارز</th><th>خرید از</th>'
-                '<th>فروش به</th><th>سود ٪</th></tr></thead><tbody>')
-    rows.append(opp_rows or '<tr><td colspan="5" class="muted">فرصتی ثبت نشده</td></tr>')
+                '<th>فروش به</th><th>سود ٪</th><th>وضعیت</th></tr></thead><tbody>')
+    rows.append(opp_rows or '<tr><td colspan="6" class="muted">فرصتی ثبت نشده</td></tr>')
     rows.append('</tbody></table></div>')
 
     spread_rows = ""

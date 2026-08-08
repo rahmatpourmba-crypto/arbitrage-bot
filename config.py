@@ -106,3 +106,14 @@ DASHBOARD_PORT = 8080
 
 def taker_fee(exchange_name: str) -> float:
     return TAKER_FEES.get(exchange_name, DEFAULT_TAKER_FEE)
+
+
+def is_tradable(exchange_name: str) -> bool:
+    if PAPER_TRADING:
+        return True
+    creds = API_KEYS.get(exchange_name, {})
+    return bool(creds.get("apiKey")) and bool(creds.get("secret"))
+
+
+def tradable_exchanges() -> list:
+    return [name for name in EXCHANGES if is_tradable(name)]

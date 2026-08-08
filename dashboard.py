@@ -43,8 +43,8 @@ HTML = """<!DOCTYPE html>
   </div>
 
   <div class="section"><h3>فرصت‌های اخیر</h3>
-    <table><thead><tr><th>زمان</th><th>جفت‌ارز</th><th>خرید از</th><th>فروش به</th><th>سود ٪</th></tr></thead>
-    <tbody id="opp_body"><tr><td colspan="5" class="muted">فرصتی ثبت نشده</td></tr></tbody></table>
+    <table><thead><tr><th>زمان</th><th>جفت‌ارز</th><th>خرید از</th><th>فروش به</th><th>سود ٪</th><th>وضعیت</th></tr></thead>
+    <tbody id="opp_body"><tr><td colspan="6" class="muted">فرصتی ثبت نشده</td></tr></tbody></table>
   </div>
 
   <div class="section"><h3>اسپرد زنده بازار</h3>
@@ -78,7 +78,8 @@ async function refresh() {
   if (s.opportunities.length) {
     ob.innerHTML = s.opportunities.map(o =>
       `<tr><td>${o.time||''}</td><td>${o.symbol}</td><td>${o.buy_exchange} @ ${o.buy_price}</td>` +
-      `<td>${o.sell_exchange} @ ${o.sell_price}</td><td class="pos">${o.profit_percent.toFixed(3)}</td></tr>`
+      `<td>${o.sell_exchange} @ ${o.sell_price}</td><td class="pos">${o.profit_percent.toFixed(3)}</td>` +
+      `<td>${o.status==='executed' ? 'معامله شد' : 'فقط مشاهده'}</td></tr>`
     ).join('');
   }
 
