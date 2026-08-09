@@ -104,7 +104,7 @@ DASHBOARD_HOST = "0.0.0.0"
 DASHBOARD_PORT = 8080
 
 # ---- Listing Hunter (شکارچی میم‌کوین تازه لیست‌شده) ----
-LISTING_EXCHANGE = "lbank"
+LISTING_EXCHANGE = "mexc"
 LISTING_BUDGET_USDT = 1.0
 LISTING_TRAILING_STOP_PERCENT = 20.0
 LISTING_MAX_POSITIONS = 3
@@ -115,7 +115,7 @@ LISTING_STATE_FILE = "listing_state.json"
 LISTING_AUTO_BUY = True
 LISTING_BUY_UNANNOUNCED = False
 LISTING_ANNOUNCE_VALID_HOURS = 72
-LISTING_ANNOUNCE_URL = ""
+LISTING_ANNOUNCE_URL = "https://www.mexc.com/announcements/new-listings?page=1"
 
 
 def taker_fee(exchange_name: str) -> float:
