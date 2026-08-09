@@ -1,3 +1,5 @@
+import json
+import os
 import threading
 
 from flask import Flask, jsonify
@@ -62,6 +64,12 @@ HTML = """<!DOCTYPE html>
     <tbody id="bal_body"></tbody></table>
   </div>
 
+  <div class="section"><h3>شکارچی لیستینگ (میم‌کوین)</h3>
+    <div class="muted" id="listing_meta">شکارچی در حال اجرا نیست (یا داده‌ای ثبت نشده)</div>
+    <table><thead><tr><th>جفت‌ارز</th><th>قیمت خرید</th><th>قیمت فعلی</th><th>قله</th><th>افت از قله ٪</th><th>زمان</th></tr></thead>
+    <tbody id="listing_body"></tbody></table>
+  </div>
+
 <script>
 async function refresh() {
   const s = await fetch('/api/state').then(r => r.json());
@@ -104,6 +112,24 @@ async function refresh() {
     `<tr><td>${ex}</td><td>${Number(bal.USDT || 0).toFixed(2)}</td></tr>`
   );
   bb.innerHTML = balRows.join('') || '<tr><td colspan="2" class="muted">—</td></tr>';
+
+  const l = await fetch('/api/listing').then(r => r.json());
+  const lp = l.positions || {};
+  const lb = document.getElementById('listing_body');
+  if (Object.keys(lp).length) {
+    lb.innerHTML = Object.entries(lp).map(([sym, p]) => {
+      const drop = ((p.highest - p.buy_price) / p.highest * 100).toFixed(1);
+      const cls = drop >= 20 ? 'neg' : 'pos';
+      return `<tr><td>${sym}</td><td>${p.buy_price}</td><td>${p.buy_price}</td>` +
+        `<td>${p.highest}</td><td class="${cls}">${drop}</td><td>${p.buy_time}</td></tr>`;
+    }).join('');
+  } else {
+    lb.innerHTML = '<tr><td colspan="6" class="muted">موقعیت باز نیست</td></tr>';
+  }
+  document.getElementById('listing_meta').textContent =
+    'بودجه هر معامله: ' + l.budget_usdt + ' USDT | توقف دنبال‌کننده: ' + l.trailing_stop + '%' +
+    (l.paper_usdt != null ? ' | موجودی تستی: ' + l.paper_usdt.toFixed(2) : '') +
+    ' | معاملات بسته: ' + (l.closed || []).length;
 }
 setInterval(refresh, 3000);
 refresh();
@@ -120,6 +146,19 @@ def index():
 @app.route("/api/state")
 def api_state():
     return jsonify(store.get())
+
+
+@app.route("/api/listing")
+def api_listing():
+    data = {"positions": {}, "closed": [], "announced": {}, "paper_usdt": None}
+    try:
+        with open(config.LISTING_STATE_FILE, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        pass
+    data["budget_usdt"] = config.LISTING_BUDGET_USDT
+    data["trailing_stop"] = config.LISTING_TRAILING_STOP_PERCENT
+    return jsonify(data)
 
 
 def start_dashboard(port=None):

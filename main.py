@@ -148,6 +148,7 @@ def main():
     parser.add_argument("--once", action="store_true", help="Scan once and exit")
     parser.add_argument("--selftest", action="store_true", help="Run synthetic execution test")
     parser.add_argument("--report", action="store_true", help="Scan once and export static HTML report (no trading)")
+    parser.add_argument("--listing", action="store_true", help="Run listing hunter (new meme coin listings)")
     parser.add_argument("--headless", action="store_true", help="Run without web dashboard")
     parser.add_argument("--port", type=int, default=config.DASHBOARD_PORT, help="Dashboard port")
     args = parser.parse_args()
@@ -164,6 +165,10 @@ def main():
         return
     if args.report:
         report_scan(scanner)
+        return
+    if args.listing:
+        from listing_hunter import run_listing
+        run_listing()
         return
     if not args.headless:
         from dashboard import start_dashboard
